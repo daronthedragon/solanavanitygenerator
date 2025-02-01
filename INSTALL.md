@@ -7,7 +7,9 @@
 
 ## 🚀 Supported Operating Systems  
 ✔️ **Windows**  
+
 ✔️ **macOS** 
+
 ✔️ **Linux (OFC)**
 
 💡 **Both Windows and macOS use the same installation steps. The only difference is how you open the terminal.**  
