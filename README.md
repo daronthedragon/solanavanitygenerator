@@ -2,7 +2,7 @@
 
 🔥 **Created by [@daronthedragon](https://twitter.com/daronthedragon) on Twitter** 🔥  
 
-A **simple, open-source, and secure** vanity wallet generator for **Solana**. This tool allows users to generate **custom Solana wallet addresses** with specific prefixes or suffixes while ensuring **full security on their system**.  
+A **simple, open-source, and secure** vanity wallet generator for **Solana**. This tool allows users to generate **custom Solana wallet addresses** with specific prefixes or suffixes while ensuring **full security on their system**.  Made this for Fun! Probably no reoccuring updates but will commit to making this fully functioning as time progresses.
 
 ---
 
