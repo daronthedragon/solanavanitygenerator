@@ -28,21 +28,21 @@ node -v
 ```
 
 ##🔹 Installation Instructions for Windows
-1️⃣ Open Command Prompt or PowerShell
+###1️. Open Command Prompt or PowerShell
 Press Win + R, type cmd, and press Enter to open Command Prompt.
 Alternatively, open PowerShell by pressing Win + X and selecting Windows PowerShell.
-##2️⃣ Clone the Repository OR Download ZIP
+###2️. Clone the Repository OR Download ZIP
 Option 1: Clone with Git (Recommended)
 ```sh
 git clone https://github.com/daronthedragon/solanavanitygenerator.git && cd solanavanitygenerator
 ```
-##3️⃣ Install Dependencies
+###3️. Install Dependencies
 Run the following command in the project directory:
 
 ```sh
 npm install
 ```
-##4️⃣ Run the Generator
+###4️. Run the Generator
 Start the program:
 ```sh
 node gen.js
@@ -50,9 +50,11 @@ node gen.js
 
 ##🔹 Installation Instructions for Mac
 
-##1️⃣ Open Terminal
+##1️.  Open Terminal
+
 Press Command + Space, type Terminal, and press Enter to open the Terminal app.
-##2️⃣ Clone the Repository OR Download ZIP
+
+##2️. Clone the Repository OR Download ZIP
 ```
 git clone https://github.com/daronthedragon/solanavanitygenerator.git && cd solanavanitygenerator
 ```
