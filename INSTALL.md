@@ -27,8 +27,8 @@ After installation, verify Node.js is installed by running:
 node -v
 ```
 
-##🔹 Installation Instructions for Windows
-###1️. Open Command Prompt or PowerShell
+## 🔹 Installation Instructions for Windows
+### 1️. Open Command Prompt or PowerShell
 Press Win + R, type cmd, and press Enter to open Command Prompt.
 Alternatively, open PowerShell by pressing Win + X and selecting Windows PowerShell.
 ###2️. Clone the Repository OR Download ZIP
@@ -36,7 +36,9 @@ Option 1: Clone with Git (Recommended)
 ```sh
 git clone https://github.com/daronthedragon/solanavanitygenerator.git && cd solanavanitygenerator
 ```
-###3️. Install Dependencies
+
+### 3️. Install Dependencies
+
 Run the following command in the project directory:
 
 ```sh
@@ -48,14 +50,15 @@ Start the program:
 node gen.js
 ```
 
-##🔹 Installation Instructions for Mac
+## 🔹 Installation Instructions for Mac
 
-##1️.  Open Terminal
+### 1️.  Open Terminal
+
 
 Press Command + Space, type Terminal, and press Enter to open the Terminal app.
 
-##2️. Clone the Repository OR Download ZIP
+### 2️. Clone the Repository OR Download ZIP
 ```
 git clone https://github.com/daronthedragon/solanavanitygenerator.git && cd solanavanitygenerator
 ```
-# STEP 3 & 4 SAME AS WINDOWS
+### STEP 3 & 4 SAME AS WINDOWS
