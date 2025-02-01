@@ -44,7 +44,7 @@ Run the following command in the project directory:
 ```sh
 npm install
 ```
-###4️. Run the Generator
+### 4️. Run the Generator
 Start the program:
 ```sh
 node gen.js
