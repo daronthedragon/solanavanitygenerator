@@ -20,9 +20,10 @@ A **simple, open-source, and secure** vanity wallet generator for **Solana**. Th
 ## 📥 Installation  
 📖 **[Want to install on windows or Mac? read here](https://github.com/daronthedragon/solanavanitygenerator/blob/main/INSTALL.md)**  
 
-### **1️⃣ Clone the Repository**  
+### **1️⃣ Clone the Repository & make a directory**  
 ```sh
 git clone https://github.com/daronthedragon/solanavanitygenerator.git
+mkdir solanavanitygenerator
 cd solanavanitygenerator
 ```
 
