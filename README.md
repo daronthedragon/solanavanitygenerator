@@ -1,129 +1,130 @@
-# 🚀 Solana Vanity Address Generator  
+<div align="center">
 
-🔥 **Created by [@daronthedragon](https://twitter.com/daronthedragon) on Twitter** 🔥  
+# 🚀 Solana Vanity Address Generator
 
-A **simple, open-source, and secure** vanity wallet generator for **Solana**. This tool allows users to generate **custom Solana wallet addresses** with specific prefixes or suffixes while ensuring **full security on their system**.  Made this for Fun! Probably no reoccuring updates but will commit to making this fully functioning as time progresses.
+**Generate a Solana wallet address that starts or ends with whatever you want.**
 
----
+🔥 Created by [@daronthedragon](https://twitter.com/daronthedragon) 🔥
 
-## 🛠 Features  
+[![Node](https://img.shields.io/badge/Node-%E2%89%A516-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Runs locally](https://img.shields.io/badge/keys-never%20leave%20your%20machine-blueviolet)](#-security)
+[![License](https://img.shields.io/badge/license-MIT-black)](#-license)
 
-✔️ **Multi-threaded processing** for ultra-fast address generation  
-✔️ **Live progress updates** with batch tracking and estimated time to completion  
-✔️ **Supports both prefixes and suffixes** for vanity address matching  
-✔️ **Generates secure, local wallets without exposing private keys online**  
-✔️ **Automatically prompts to generate another address or exit**  
-✔️ **Outputs private keys in a format compatible with Phantom**  
+</div>
 
 ---
 
-## 📥 Installation  
-📖 **[Want to install on windows or Mac? read here](https://github.com/daronthedragon/solanavanitygenerator/blob/main/INSTALL.md)**  
+Every CPU core generates keypairs until one of them lands an address matching your pattern. No servers, no APIs — the search happens on your machine and the key never goes anywhere.
 
-### **1️⃣ Make a directory & clone the Repository**  
+<p align="center">
+  <img src="assets/demo.svg" width="720"
+       alt="Terminal showing the generator running across 16 CPU cores, having scanned 700,000 addresses while searching for a prefix">
+</p>
+
+<sub>A real run, searching across 16 cores. The result screen is deliberately not shown — it prints a live private key.</sub>
+
+---
+
+## 📥 Install
+
 ```sh
-mkdir solanavanitygenerator
-
-cd solanavanitygenerator
-
 git clone https://github.com/daronthedragon/solanavanitygenerator.git
-
 ```
 
-### **2️⃣ Install Dependencies**  
 ```sh
-npm install
+cd solanavanitygenerator && npm install
 ```
 
-### **3️⃣ Run the Program**  
 ```sh
 node gen.js
 ```
 
----
-
-## 📝 Usage  
-
-### **1️⃣ Choose if you want a prefix or suffix**  
-- Type **`start`** to generate addresses that **start** with a specific string  
-- Type **`end`** to generate addresses that **end** with a specific string  
-
-### **2️⃣ Enter Your Desired Pattern**  
-- Example **(prefix):** `beet` → Will generate an address like `beetXyz1234...`  
-- Example **(suffix):** `moon` → Will generate an address like `Xyz1234moon`  
-
-### **3️⃣ Wait for the Address to Generate**  
-- The program will continuously generate addresses until it **finds a match**  
-- **Live ticker updates** show how many addresses have been scanned  
-- **Estimated time** to completion is displayed  
-
-### **4️⃣ Vanity Address Found! 🎉**  
-Once a match is found, the program will display:  
-- ✅ **Public Key** (Your Solana wallet address)  
-- 🔑 **Private Key** (For import into Phantom & other wallets)  
-- ⏱️ **Time Taken** (How long the process took)  
-
-### **5️⃣ Choose to Generate Another or Exit**  
-After an address is found, the program will ask:  
-- **"Would you like to generate another vanity address? (yes/no)"**  
-- Type **`yes`** to generate another  
-- Type **`no`** to exit  
+Needs Node 16+. 📖 New to the terminal? The [install guide](INSTALL.md) walks through Windows and macOS step by step.
 
 ---
 
-## 🔒 Security  
+## 📝 How it works
 
-This tool is **100% secure** and runs **locally on your system**.  
-✔️ **No external servers or APIs are used**  
-✔️ **Private keys are never transmitted online**  
-✔️ **Wallets are generated directly on your machine**  
+**1. Pick `start` or `end`** — whether your pattern should be a prefix or a suffix.
 
----
+**2. Enter your pattern.** Solana addresses are Base-58, so only these characters exist:
 
-## 📌 Example Output  
-
-```sh
-✅ Vanity address found! 🎉
-
-📜 Public Key:  🔹 beetXyz123456789abcdefg
-🔑 Private Key (Import into Phantom!): 🟢 5x9hP2vP...dDkQTxGzM1FZ
-
-⏱️ Time Taken: 12.42 seconds
-🔒 Store your private key securely!
+```
+123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
 ```
 
----
+There is no `0`, no capital `O`, no capital `I`, and no lowercase `l`. The tool rejects them rather than searching forever for something impossible.
 
-## ❓ FAQ  
+**3. Wait.** A live ticker shows batches processed, addresses scanned, and an estimate. Every core is working.
 
-### **Can I use this on Windows, Mac, or Linux?**  
-✅ Yes! This program works on **Windows**, **MacOS**, and **Linux**.  
+**4. Copy your keys.** When a match lands, the public key and the private key are printed, along with how long it took.
 
-### **How long does it take to generate a vanity address?**  
-🔹 It depends on your CPU speed and the length of the pattern you're searching for.  
-🔹 Shorter patterns (e.g., 3-4 characters) take seconds to minutes.  
-🔹 Longer patterns (e.g., 6+ characters) take significantly longer.  
+### ⏱ How long does it take?
 
-### **Is this secure?**  
-✅ **Yes!** The program runs entirely on your system, and private keys **never** leave your computer.  
+Each extra character multiplies the search by 58. Rough orders of magnitude on a typical multi-core machine:
 
-### **Can I use this wallet with Phantom, Solflare, or other wallets?**  
-✅ Yes! The generated **private key** can be imported into **Phantom**, **Solflare**, or any other Solana-compatible wallet.
+| Pattern length | Expected attempts | Ballpark |
+| :--- | :--- | :--- |
+| 3 characters | ~195,000 | seconds |
+| 4 characters | ~11 million | a minute or two |
+| 5 characters | ~656 million | hours |
+| 6 characters | ~38 billion | days |
 
----
-
-## 🤝 Contributing  
-
-Contributions are **welcome**! If you have suggestions for improvements, feel free to:  
-- Open an **issue**  
-- Submit a **pull request**  
+Case matters, so `SOL` and `sol` are different searches. Suffixes are the same cost as prefixes.
 
 ---
 
-## 📜 License  
+## 🔒 Security
 
-This project is **open-source** and licensed under the **MIT License**.  
+**Everything happens locally.** Keys are generated on your machine with Node's cryptographic random source, and nothing is transmitted anywhere. There is no server, no API call, and no telemetry. You can read all of [`gen.js`](gen.js) in a few minutes — that is the point of it being open source.
+
+Two things worth knowing anyway:
+
+- **The private key is printed to your terminal.** That means it lands in your scroll-back, and in any recording or screen-share running at the time. Move it into your wallet, then clear the screen.
+- **A vanity address is not a safer address.** It is a normal keypair that happened to match a pattern. Treat the key exactly as you would any other.
 
 ---
 
-### 🌟 **If you found this useful, consider starring the repo on GitHub!** ⭐  
+## 🐛 Fixed: keys that would not import
+
+If you generated a wallet with an older version of this tool and your wallet app **rejected the private key**, that was a bug here, not something you did.
+
+Base-58 encodes every leading zero byte as a literal `1`. The old encoder treated the key as one big number, which silently dropped those leading zeros and produced a shorter string that decodes back to the wrong bytes. Roughly **1 in 313** keys starts with a zero byte, so about that share of generated wallets exported a string no wallet could import.
+
+This is fixed. Keys generated now encode correctly, verified against every key in a 20,000-keypair sample that starts with a zero byte.
+
+Also fixed in the same pass: worker threads now shut down once a match is found, instead of pinning every core at 100% while the result sits on screen.
+
+---
+
+## ❓ FAQ
+
+**Does this work on Windows, macOS and Linux?**
+Yes, all three. See [INSTALL.md](INSTALL.md).
+
+**Can I import the result into Phantom or Solflare?**
+Yes. The private key is printed in the Base-58 format wallets expect.
+
+**Can I make the search faster?**
+It already uses every core. The only real lever is a shorter pattern — each character you drop makes it 58× quicker.
+
+**Is a longer pattern more secure?**
+No. Every address here has the same 256-bit keypair behind it. A longer pattern is purely cosmetic and costs more CPU.
+
+---
+
+## 🤝 Contributing
+
+Issues and pull requests are welcome.
+
+---
+
+## 📜 License
+
+MIT.
+
+<div align="center">
+
+⭐ **If you found this useful, consider starring the repo!** ⭐
+
+</div>

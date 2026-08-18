@@ -1,0 +1,15 @@
+
+🟢 Welcome to the Solana Vanity Address Generator! 🟢
+🔥 Created by @daronthedragon on Twitter 🔥
+
+⚠️  Solana addresses only contain these characters:
+   🟡 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+🚫 Invalid characters: ❌ 0 (zero), O, I (capital i), l (lowercase L)
+
+👉 Do you want the address to start with or end with your desired string? (start/end): 🔍 Enter the desired prefix/suffix: 
+🚀 Searching for a Solana address that starts with 'daronx'...
+
+
+🔧 Using 16 CPU cores for ultra-fast generation...
+
+🔄 Batches Processed: 140 | 🏹 Addresses Scanned: 700,000 | ⏳ Estimated Completion: 265s

@@ -22,6 +22,15 @@ function encodeBase58(bytes) {
         encoded = BASE58_ALPHABET[Number(remainder)] + encoded;
     }
 
+    // Base-58 represents every leading zero byte as a literal "1". Treating the
+    // key as one big number silently drops them, producing a shorter string
+    // that decodes back to the wrong bytes, so wallets refuse the import.
+    // Around 1 in 313 secret keys starts with a zero byte.
+    for (const byte of bytes) {
+        if (byte !== 0) break;
+        encoded = BASE58_ALPHABET[0] + encoded;
+    }
+
     return encoded;
 }
 
@@ -88,6 +97,8 @@ function startWorkerThreads(type, matchString, rl) {
     let startTime = Date.now();
     let workersActive = NUM_WORKERS;
     let estimatedCompletionTime = "Calculating...";
+    const workers = [];
+    let found = false;
 
     const updateTicker = setInterval(() => {
         let elapsedTime = (Date.now() - startTime) / 1000; // Elapsed time in seconds
@@ -106,6 +117,7 @@ function startWorkerThreads(type, matchString, rl) {
         const worker = new Worker(__filename, {
             workerData: { type, matchString }
         });
+        workers.push(worker);
 
         worker.on("message", (data) => {
             if (data.type === "progress") {
@@ -114,8 +126,15 @@ function startWorkerThreads(type, matchString, rl) {
                 return;
             }
 
-            // If a match is found, stop all workers immediately
+            // Two workers can match in the same tick. First one wins.
+            if (found) return;
+            found = true;
+
+            // If a match is found, stop all workers immediately.
+            // Without this they keep looping at full tilt on every core while
+            // the result sits on screen waiting for an answer.
             clearInterval(updateTicker);
+            for (const w of workers) w.terminate();
             let elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2); // Time taken in seconds
 
             console.clear();
@@ -132,6 +151,9 @@ function startWorkerThreads(type, matchString, rl) {
 
         worker.on("exit", (code) => {
             workersActive--;
+            // After a match every worker is torn down on purpose, so a
+            // non-zero code here is expected rather than a failure.
+            if (found) return;
             if (code !== 0) console.error(`⚠️ Worker stopped with exit code ${code}`);
             if (workersActive === 0) {
                 console.log("❌ No workers remaining. Exiting...");
