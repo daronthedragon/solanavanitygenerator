@@ -3,34 +3,46 @@ process.env.NODE_NO_WARNINGS = "1";
 process.noDeprecation = true;
 
 const { Worker, isMainThread, parentPort, workerData } = require("worker_threads");
-const { Keypair } = require("@solana/web3.js");
+const { selectBackend } = require("./backends.js");
 const os = require("os");
 const readline = require("readline");
 
 const NUM_WORKERS = os.cpus().length; // Use all CPU cores
 const BATCH_SIZE = 5000; // ✅ Increased batch size for even faster performance
 
-// Base-58 encoding function (manually implemented for maximum efficiency)
+// Base-58 encoding, by long division over a small scratch array.
+//
+// The obvious version converts the key into one BigInt and divides that down.
+// It is correct, but it allocates a fresh BigInt per digit, and at a million
+// keys a second that allocation dominates. Dividing a reused byte array in
+// place is roughly 4x quicker and allocates nothing per call.
 const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const B58_SCRATCH = new Uint8Array(128);
+
 function encodeBase58(bytes) {
-    let num = BigInt("0x" + Buffer.from(bytes).toString("hex"));
+    let length = 0;
+    let zeros = 0;
+    while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
+
+    for (let i = zeros; i < bytes.length; i++) {
+        let carry = bytes[i];
+        for (let j = 0; j < length; j++) {
+            carry += B58_SCRATCH[j] << 8;
+            B58_SCRATCH[j] = carry % 58;
+            carry = (carry / 58) | 0;
+        }
+        while (carry > 0) {
+            B58_SCRATCH[length++] = carry % 58;
+            carry = (carry / 58) | 0;
+        }
+    }
+
+    // Base-58 represents every leading zero byte as a literal "1". Dropping
+    // them yields a shorter string that decodes back to different bytes, so
+    // wallets refuse the import. Around 1 in 313 secret keys starts with one.
     let encoded = "";
-
-    while (num > 0) {
-        let remainder = num % 58n;
-        num = num / 58n;
-        encoded = BASE58_ALPHABET[Number(remainder)] + encoded;
-    }
-
-    // Base-58 represents every leading zero byte as a literal "1". Treating the
-    // key as one big number silently drops them, producing a shorter string
-    // that decodes back to the wrong bytes, so wallets refuse the import.
-    // Around 1 in 313 secret keys starts with a zero byte.
-    for (const byte of bytes) {
-        if (byte !== 0) break;
-        encoded = BASE58_ALPHABET[0] + encoded;
-    }
-
+    for (let i = 0; i < zeros; i++) encoded += BASE58_ALPHABET[0];
+    for (let i = length - 1; i >= 0; i--) encoded += BASE58_ALPHABET[B58_SCRATCH[i]];
     return encoded;
 }
 
@@ -90,7 +102,15 @@ if (isMainThread) {
 
 // Function to start worker threads
 function startWorkerThreads(type, matchString, rl) {
-    console.log(`\n🔧 Using ${NUM_WORKERS} CPU cores for ultra-fast generation...\n`);
+    // Loaded here only to report which implementation the workers will use.
+    let backendName = "unknown";
+    try {
+        backendName = selectBackend().name;
+    } catch {
+        // The workers will surface the real error.
+    }
+
+    console.log(`\n🔧 Using ${NUM_WORKERS} CPU cores via ${backendName}...\n`);
 
     let totalAttempts = 0;
     let totalBatches = 0;
@@ -100,16 +120,22 @@ function startWorkerThreads(type, matchString, rl) {
     const workers = [];
     let found = false;
 
+    // A pattern of length L needs 58^L attempts on average, since every
+    // position holds one of 58 equally likely characters. The previous
+    // estimate assumed a flat ten million scans whatever was being searched
+    // for, which was far too hopeful for long patterns.
+    const expectedAttempts = Math.pow(58, matchString.length);
+
     const updateTicker = setInterval(() => {
-        let elapsedTime = (Date.now() - startTime) / 1000; // Elapsed time in seconds
-        let speed = totalAttempts / elapsedTime; // Addresses per second
+        const elapsedTime = (Date.now() - startTime) / 1000; // Elapsed time in seconds
+        const speed = totalAttempts / elapsedTime; // Addresses per second
 
         if (speed > 0) {
-            estimatedCompletionTime = `${Math.max(1, Math.floor(10_000_000 / speed))}s`; // Estimate for 10M scans
+            estimatedCompletionTime = formatDuration(expectedAttempts / speed);
         }
 
         process.stdout.write(
-            `\r🔄 Batches Processed: ${totalBatches} | 🏹 Addresses Scanned: ${totalAttempts.toLocaleString()} | ⏳ Estimated Completion: ${estimatedCompletionTime}   `
+            `\r🔄 ${totalBatches} batches | 🏹 ${totalAttempts.toLocaleString()} scanned | ⚡ ${Math.round(speed).toLocaleString()}/sec | ⏳ ~${estimatedCompletionTime} expected   `
         );
     }, 500); // ✅ Live ticker updates every 0.5s for smooth updates
 
@@ -141,7 +167,8 @@ function startWorkerThreads(type, matchString, rl) {
             console.log("\n✅ Vanity address found! 🎉\n");
             console.log(`📜 Public Key:  🔹 ${data.publicKey}`);
             console.log(`🔑 Private Key (Import into Phantom!):\n🟢 ${data.secretKey}\n`);
-            console.log(`⏱️ Time Taken: ${elapsedTime} seconds`);
+            const rate = Math.round(totalAttempts / Math.max(Number(elapsedTime), 0.001));
+            console.log(`⏱️ Time Taken: ${elapsedTime} seconds — ${totalAttempts.toLocaleString()} addresses at ${rate.toLocaleString()}/sec via ${data.backend}`);
             console.log("🔒 Store your private key securely!\n");
 
             askToGenerateAgain(rl);
@@ -165,22 +192,24 @@ function startWorkerThreads(type, matchString, rl) {
 
 // Function to generate a vanity address inside a worker thread
 function generateVanityAddress(type, matchString) {
-    let attempts = 0;
+    const backend = selectBackend();
 
     while (true) {
         for (let i = 0; i < BATCH_SIZE; i++) {  // ✅ BATCH OPTIMIZATION: Generate multiple keys per iteration
-            const keypair = Keypair.generate();
-            const pubkey = keypair.publicKey.toBase58();
-            const secretKeyBase58 = encodeBase58(Uint8Array.from(keypair.secretKey)); // ✅ Correct encoding
+            // Only the public key is needed to test the pattern. Encoding the
+            // secret key too costs more than the test itself, and 99.999% of
+            // the time the result is thrown away, so it waits for a match.
+            const address = encodeBase58(backend.next());
 
-            attempts++;
+            const hit = type === "start"
+                ? address.startsWith(matchString)
+                : address.endsWith(matchString);
 
-            if ((type === "start" && pubkey.startsWith(matchString)) ||
-                (type === "end" && pubkey.endsWith(matchString))) {
-                
+            if (hit) {
                 parentPort.postMessage({
-                    publicKey: pubkey,
-                    secretKey: secretKeyBase58
+                    publicKey: address,
+                    secretKey: encodeBase58(backend.secret()),
+                    backend: backend.name
                 });
 
                 return;
@@ -191,8 +220,26 @@ function generateVanityAddress(type, matchString) {
     }
 }
 
+/** Seconds into something readable at a glance. */
+function formatDuration(seconds) {
+    if (!isFinite(seconds)) return "unknown";
+    if (seconds < 60) return `${Math.max(1, Math.round(seconds))}s`;
+    if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+    if (seconds < 86400) return `${(seconds / 3600).toFixed(1)}h`;
+    return `${(seconds / 86400).toFixed(1)} days`;
+}
+
 // Function to ask user if they want to generate another vanity address
 function askToGenerateAgain(rl) {
+    // stdin is not always a terminal. Driven from a pipe or a script, readline
+    // has already closed by the time a match lands, and asking another question
+    // throws ERR_USE_AFTER_CLOSE — a stack trace printed directly beneath the
+    // key the user came for.
+    if (rl.closed) {
+        console.log("👋 Done. Store your private key securely!\n");
+        process.exit(0);
+    }
+
     rl.question("🔁 Would you like to generate another vanity address? (yes/no): ", function(answer) {
         answer = answer.toLowerCase().trim();
         if (answer === "yes" || answer === "y") {

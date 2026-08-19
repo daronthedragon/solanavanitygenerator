@@ -14,6 +14,6 @@
 <text y="182.9" textLength="542.70" lengthAdjust="spacing" xml:space="preserve"><tspan x="22" fill="#c9d1d9">🚫 Invalid characters: ❌ 0 (zero), O, I (capital i), l (lowercase L)</tspan></text>
 <text y="222.1" textLength="980.10" lengthAdjust="spacing" xml:space="preserve"><tspan x="22" fill="#c9d1d9">👉 Do you want the address to start with or end with your desired string? (start/end): 🔍 Enter the desired prefix/suffix: </tspan></text>
 <text y="241.7" textLength="494.10" lengthAdjust="spacing" xml:space="preserve"><tspan x="22" fill="#c9d1d9">🚀 Searching for a Solana address that starts with 'daronx'...</tspan></text>
-<text y="300.4" textLength="396.90" lengthAdjust="spacing" xml:space="preserve"><tspan x="22" fill="#c9d1d9">🔧 Using 16 CPU cores for ultra-fast generation...</tspan></text>
-<text y="339.6" textLength="737.10" lengthAdjust="spacing" xml:space="preserve"><tspan x="22" fill="#c9d1d9">🔄 Batches Processed: 140 | 🏹 Addresses Scanned: 700,000 | ⏳ Estimated Completion: 265s     </tspan></text>
+<text y="300.4" textLength="299.70" lengthAdjust="spacing" xml:space="preserve"><tspan x="22" fill="#c9d1d9">🔧 Using 16 CPU cores via libsodium...</tspan></text>
+<text y="339.6" textLength="607.50" lengthAdjust="spacing" xml:space="preserve"><tspan x="22" fill="#c9d1d9">🔄 1630 batches | 🏹 8,150,000 scanned | ⚡ 646,671/sec | ⏳ ~16.4h expected   </tspan></text>
 </svg>

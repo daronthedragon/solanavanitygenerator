@@ -6,11 +6,23 @@
   "scripts": {
     "start": "node gen.js"
   },
-  "keywords": ["solana", "vanity", "wallet", "address", "keypair", "crypto"],
+  "keywords": [
+    "solana",
+    "vanity",
+    "wallet",
+    "address",
+    "keypair",
+    "crypto"
+  ],
   "author": "daronthedragon",
   "license": "MIT",
-  "engines": { "node": ">=16" },
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "@solana/web3.js": "^1.98.0"
+  },
+  "optionalDependencies": {
+    "sodium-native": "^4.3.1"
   }
 }
